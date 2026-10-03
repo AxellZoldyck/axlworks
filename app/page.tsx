@@ -1,28 +1,58 @@
 "use client";
-import {useEffect,useState} from "react";
+import {useEffect,useRef,useState} from "react";
 
 const projects=[
-  {index:"01",name:"Rentalin",type:"SAAS / SYSTEM",text:"Billing, device control, and business operations for PS rental owners.",href:"https://rentalin.online"},
-  {index:"02",name:"XL SATU",type:"WEB / COMMERCE",text:"A conversion-focused digital storefront for home internet sales.",href:"https://xlsatungebut.com"},
-  {index:"03",name:"Kejar Target",type:"SAAS / GAMIFICATION",text:"Sales tracking, performance visibility, and team gamification.",href:"https://kejartarget.online"}
+ {index:"01",name:"Rentalin",type:"SAAS / SYSTEM",text:"Billing, device control, and business operations for PS rental owners.",href:"https://rentalin.online"},
+ {index:"02",name:"XL SATU",type:"WEB / COMMERCE",text:"A conversion-focused digital storefront for home internet sales.",href:"https://xlsatungebut.com"},
+ {index:"03",name:"Kejar Target",type:"SAAS / GAMIFICATION",text:"Sales tracking, performance visibility, and team gamification.",href:"https://kejartarget.online"}
 ];
 
-function MotionFrame(){return <div className="motion-frame" aria-hidden="true"><div className="frame-depth"/><div className="frame-grid"/><div className="frame-orbit orbit-one"/><div className="frame-orbit orbit-two"/><div className="frame-orbit orbit-three"/><div className="frame-core"><span/><span/><span/></div><div className="frame-line line-a"/><div className="frame-line line-b"/><div className="frame-line line-c"/><div className="frame-label label-a">AXL / 026</div><div className="frame-label label-b">SYSTEM / MOTION</div></div>}
+function MotionFrame(){return <div className="motion-frame"><div className="frame-depth"/><div className="frame-grid"/><div className="frame-orbit orbit-one"/><div className="frame-orbit orbit-two"/><div className="frame-orbit orbit-three"/><div className="frame-core"><span/><span/><span/></div><div className="frame-line line-a"/><div className="frame-line line-b"/><div className="frame-line line-c"/><div className="frame-label label-a">AXL / 026</div><div className="frame-label label-b">DIGITAL SYSTEMS</div></div>}
 
-function ProjectPreview({href,name}:{href:string,name:string}){return <div className="preview-window"><div className="preview-bar"><span className="dot"/><span className="dot"/><span className="dot"/><small>{name.toLowerCase()}.online</small></div><iframe src={href} title={name+" live preview"} loading="lazy"/><div className="preview-fade"/></div>}
+function Preview({href,name}:{href:string,name:string}){return <div className="live-preview"><div className="browser-bar"><i/><i/><i/><span>{name.toLowerCase().replace(/ /g,"-")}.online</span></div><iframe src={href} title={name+" live website preview"} loading="lazy"/></div>}
+
+function Scene({kind,active,children}:{kind:string,active:boolean,children:React.ReactNode}){return <article className={"scene scene-"+kind+(active?" scene-active":"")} aria-hidden={!active}>{children}</article>}
 
 export default function Home(){
- const[scrolled,setScrolled]=useState(false); const[pointer,setPointer]=useState({x:0,y:0});
- useEffect(()=>{let raf=0;const update=()=>{const y=scrollY,max=Math.max(1,document.documentElement.scrollHeight-innerHeight),progress=Math.min(1,y/max);document.documentElement.style.setProperty("--scroll-progress",`${progress*100}%`);document.querySelectorAll<HTMLElement>("[data-depth]").forEach(el=>{const r=el.getBoundingClientRect(),d=(r.top+r.height/2-innerHeight/2)/innerHeight;el.style.setProperty("--depth",String(Math.max(-1.2,Math.min(1.2,d))));el.style.setProperty("--zoom",String(Math.min(1,Math.abs(d))))});setScrolled(y>40);raf=0};const s=()=>{if(!raf)raf=requestAnimationFrame(update)};const m=(e:MouseEvent)=>setPointer({x:(e.clientX/innerWidth-.5)*2,y:(e.clientY/innerHeight-.5)*2});const observer=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add("is-visible")}),{threshold:.06,rootMargin:"0px 0px -8% 0px"});document.querySelectorAll(".reveal").forEach(el=>observer.observe(el));addEventListener("scroll",s,{passive:true});addEventListener("mousemove",m);update();return()=>{removeEventListener("scroll",s);removeEventListener("mousemove",m);cancelAnimationFrame(raf);observer.disconnect()}},[]);
+ const stage=useRef<HTMLDivElement>(null); const [active,setActive]=useState(0); const [mouse,setMouse]=useState({x:0,y:0});
+ useEffect(()=>{
+  let raf=0;
+  const update=()=>{
+   if(!stage.current)return;
+   const r=stage.current.getBoundingClientRect(), total=Math.max(1,r.height-innerHeight), p=Math.min(1,Math.max(0,-r.top/total)), scenes=stage.current.querySelectorAll<HTMLElement>(".scene"), n=scenes.length-1;
+   const virtual=p*n;
+   scenes.forEach((el,i)=>{
+    const d=virtual-i, ad=Math.abs(d);
+    const z=Math.min(1,ad);
+    const x=d*105, y=d*13;
+    el.style.setProperty("--x",x+"%");
+    el.style.setProperty("--y",y+"%");
+    el.style.setProperty("--scale",String(1-z*.72));
+    el.style.setProperty("--rotate",String(d*3.5));
+    el.style.setProperty("--opacity",String(Math.max(0,1-z*.7)));
+    el.style.setProperty("--blur",Math.min(12,z*10)+"px");
+    el.style.setProperty("--depth",String(-ad*500)+"px");
+   });
+   setActive(Math.min(n,Math.round(virtual))); raf=0;
+  };
+  const onScroll=()=>{if(!raf)raf=requestAnimationFrame(update)};
+  const onMouse=(e:MouseEvent)=>setMouse({x:(e.clientX/innerWidth-.5)*2,y:(e.clientY/innerHeight-.5)*2});
+  addEventListener("scroll",onScroll,{passive:true});addEventListener("resize",onScroll);addEventListener("mousemove",onMouse);
+  update(); return()=>{removeEventListener("scroll",onScroll);removeEventListener("resize",onScroll);removeEventListener("mousemove",onMouse);cancelAnimationFrame(raf)};
+ },[]);
+ const scenes=[
+  <Scene key="hero" kind="hero" active={active===0}><div className="scene-noise"/><div className="scene-copy"><p className="eyebrow"><b/> DIGITAL SYSTEMS / 2026</p><h1>BUILDING<br/><em>DIGITAL</em><br/>SYSTEMS.</h1><p>A small software lab exploring products, interfaces, and the space between engineering and visual design.</p><a className="button button-dark" href="#work">Enter the work ↘</a></div><div className="scene-art" style={{transform:`translate3d(${mouse.x*-14}px,${mouse.y*-10}px,0)`}}><MotionFrame/></div><div className="scene-meta">01 / INTRO</div></Scene>,
+  <Scene key="manifesto" kind="manifesto" active={active===1}><span className="scene-number">02</span><div><p className="eyebrow">A DIFFERENT KIND OF PORTFOLIO</p><h2>One space.<br/><em>Many systems.</em></h2><p>Scroll is not navigation here. It is the camera.</p></div><div className="crosshair">+</div></Scene>,
+  <Scene key="work" kind="work" active={active===2}><div className="scene-head"><p className="eyebrow">03 / SELECTED WORK</p><h2>Built, shipped,<br/><em>used.</em></h2></div><div className="work-mini-grid">{projects.map(p=><div className="mini-project" key={p.name}><Preview href={p.href} name={p.name}/><div><span>{p.index} / {p.type}</span><h3>{p.name}</h3></div></div>)}</div></Scene>,
+  <Scene key="statement" kind="statement" active={active===3}><p className="eyebrow">04 / PRINCIPLE</p><div className="giant">MAKE<br/><i>IT</i><br/>MOVE.</div><div className="orbit-text">INTERACTION • MOTION • SYSTEMS • DETAIL •</div></Scene>,
+  <Scene key="process" kind="process" active={active===4}><div><p className="eyebrow">05 / PROCESS</p><h2>Idea → interface<br/>→ <em>real product.</em></h2></div><div className="process-list"><div><b>01</b><strong>FRAME</strong><span>Find the problem.</span></div><div><b>02</b><strong>SHAPE</strong><span>Design the interaction.</span></div><div><b>03</b><strong>SHIP</strong><span>Build what gets used.</span></div></div></Scene>,
+  <Scene key="lab" kind="lab" active={active===5}><div className="lab-disc"><div/><div/><div/><b>LAB</b></div><div><p className="eyebrow">06 / THE LAB</p><h2>Experiments<br/>become <em>software.</em></h2><p>Interfaces, motion studies, tools, concepts and systems in progress.</p></div></Scene>,
+  <Scene key="contact" kind="contact" active={active===6}><p className="eyebrow">07 / CONTACT</p><h2>Have something<br/><em>worth building?</em></h2><a href="mailto:hello@axlworks.co">hello@axlworks.co ↗</a><span className="contact-mark">AXLWORKS</span></Scene>
+ ];
  return <main>
- <nav className={scrolled?"nav nav-scrolled":"nav"}><a className="brand" href="#top">AXL<span>WORKS</span></a><div className="nav-links"><a href="#work">Work</a><a href="#lab">Lab</a><a href="#contact">Contact</a></div><a className="nav-status" href="https://github.com/AxellZoldyck/axlworks" target="_blank" rel="noreferrer"><i/> GitHub</a></nav>
- <section id="top" className="hero"><div className="hero-noise"/><div className="hero-copy" data-depth><p className="eyebrow"><span/> DIGITAL SYSTEMS / 2026</p><h1>BUILDING<br/><em>DIGITAL</em><br/>SYSTEMS.</h1><p className="hero-description">A small software lab exploring products, interfaces, and the space between engineering and visual design.</p><div className="hero-actions"><a className="button button-dark" href="#work">Explore work <span>↘</span></a><a className="text-link" href="https://github.com/AxellZoldyck" target="_blank" rel="noreferrer">GitHub ↗</a></div></div><div className="hero-visual" data-depth style={{transform:`translate3d(${pointer.x*-10}px,${pointer.y*-8}px,0)`}}><MotionFrame/></div><div className="hero-meta"><span>01 — INTRO</span><span>SCROLL / ZOOM ↓</span></div></section>
- <section className="manifesto zoom-section" data-depth><div className="manifesto-number">02</div><div className="manifesto-copy reveal"><p className="eyebrow">NOT JUST WEBSITES</p><h2>Digital things should feel <em>alive.</em></h2><p>I build software as a combination of engineering, interaction and visual language. Every screen has a reason to move.</p></div><div className="manifesto-mark">↘<br/><span>SCROLL<br/>THROUGH<br/>THE WORK</span></div></section>
- <section id="work" className="section work-section zoom-section" data-depth><div className="section-heading reveal"><p className="eyebrow">03 / SELECTED WORK</p><h2>Things that <em>ship.</em></h2></div><div className="project-list">{projects.map(p=><div className="project-card reveal" data-depth key={p.name}><div className="project-info"><span className="project-index">{p.index}</span><div><span className="project-type">{p.type}</span><h3>{p.name}</h3><p>{p.text}</p><a href={p.href} target="_blank" rel="noreferrer">Open live ↗</a></div></div><ProjectPreview href={p.href} name={p.name}/></div>)}</div></section>
- <section className="statement zoom-section" data-depth><p className="eyebrow">04 / THE APPROACH</p><div className="statement-word">BUILD<br/><span>WITH</span><br/>INTENT.</div><div className="statement-side"><span>01</span> CLARITY<br/><span>02</span> MOTION<br/><span>03</span> SYSTEMS<br/><span>04</span> DETAIL</div></section>
- <section className="process section zoom-section" data-depth><div className="section-heading reveal"><p className="eyebrow">05 / PROCESS</p><h2>From rough idea<br/>to <em>real product.</em></h2></div><div className="process-grid"><article className="reveal"><b>01</b><h3>Frame</h3><p>Define the problem, audience and the smallest useful system.</p></article><article className="reveal"><b>02</b><h3>Shape</h3><p>Turn structure into interfaces, interactions and visual rules.</p></article><article className="reveal"><b>03</b><h3>Ship</h3><p>Build, deploy, observe and keep improving what actually gets used.</p></article></div></section>
- <section id="lab" className="section lab-section zoom-section" data-depth><div className="lab-visual reveal" data-depth><div className="lab-scan"/><div className="signal signal-one"/><div className="signal signal-two"/><div className="signal signal-three"/><div className="lab-center">LAB<br/><small>∞</small></div><div className="lab-coordinate">X 04.21<br/>Y 09.88</div></div><div className="lab-copy reveal"><p className="eyebrow">06 / THE LAB</p><h2>Where ideas become <em>interfaces.</em></h2><p>Motion studies, generative visuals, product concepts, interaction patterns and small tools that may become real software.</p><div className="skill-line"><span>WEB</span><span>PRODUCT</span><span>UI / UX</span><span>SYSTEMS</span></div></div></section>
- <section className="stack-section zoom-section" data-depth><div className="stack-head"><p className="eyebrow">07 / TOOLKIT</p><h2>The machinery<br/>behind the <em>screens.</em></h2></div><div className="stack-ring"><span>REACT</span><span>NEXT.JS</span><span>LARAVEL</span><span>POSTGRESQL</span><span>DOCKER</span><span>ANDROID</span></div></section>
- <section id="contact" className="contact-section reveal"><div className="contact-orb"/><div className="contact-grid"/><p className="eyebrow">08 / START A CONVERSATION</p><h2>Have a system<br/>worth <em>building?</em></h2><a className="contact-link" href="mailto:hello@axlworks.co">hello@axlworks.co <span>↗</span></a><div className="contact-corner">AXLWORKS / 2026</div></section>
- <footer><div>AXLWORKS</div><div>DIGITAL SYSTEMS / EXPERIMENTS</div><div>© 2026</div></footer></main>
+  <nav className="nav"><a className="brand" href="#top">AXL<span>WORKS</span></a><div className="nav-links"><a href="#work">Work</a><a href="#lab">Lab</a><a href="#contact">Contact</a></div><a className="nav-status" href="https://github.com/AxellZoldyck/axlworks" target="_blank" rel="noreferrer"><i/> GitHub</a></nav>
+  <div id="top" ref={stage} className="camera-stage"><div className="camera"><div className="camera-frame">{scenes}</div><div className="camera-ui"><span>SCENE {String(active+1).padStart(2,"0")} / 07</span><span>SCROLL TO ZOOM</span></div></div></div>
+  <div id="work" className="anchor"/><div id="lab" className="anchor"/><div id="contact" className="anchor"/>
+  <footer><div>AXLWORKS</div><div>DIGITAL SYSTEMS / 2026</div><div>© 2026</div></footer>
+ </main>
 }
