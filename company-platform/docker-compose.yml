@@ -1,0 +1,40 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: axlworks-company-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-axlworks_company}
+      POSTGRES_USER: ${POSTGRES_USER:-axlworks}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in company-platform/.env}
+    volumes:
+      - company_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-axlworks} -d ${POSTGRES_DB:-axlworks_company}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - company_internal
+
+  api:
+    build:
+      context: ./backend
+    container_name: axlworks-company-api
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8001:8000"
+    networks:
+      - company_internal
+
+volumes:
+  company_postgres_data:
+
+networks:
+  company_internal:
+    driver: bridge
