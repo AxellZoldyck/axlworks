@@ -10,13 +10,12 @@ services:
     volumes:
       - company_postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-axlworks} -d ${POSTGRES_DB:-axlworks_company}"]
+      test: ["CMD-SHELL","pg_isready -U ${POSTGRES_USER:-axlworks} -d ${POSTGRES_DB:-axlworks_company}"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - company_internal
-
   api:
     build:
       context: ./backend
@@ -24,6 +23,7 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    command: ["sh","-c","alembic upgrade head && python -m app.bootstrap && python -m app.seed && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
     depends_on:
       db:
         condition: service_healthy
@@ -31,10 +31,8 @@ services:
       - "127.0.0.1:8001:8000"
     networks:
       - company_internal
-
 volumes:
   company_postgres_data:
-
 networks:
   company_internal:
     driver: bridge
