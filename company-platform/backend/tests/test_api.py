@@ -1,5 +1,5 @@
 import os
-os.environ.setdefault("DATABASE_URL","sqlite+pysqlite:///:memory:")
+os.environ.setdefault("DATABASE_URL","postgresql+psycopg://test:test@localhost:5432/test")
 os.environ.setdefault("JWT_SECRET_KEY","test-only-secret-key-that-is-long-enough-for-tests")
 from fastapi.testclient import TestClient
 from app.main import app

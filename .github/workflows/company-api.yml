@@ -15,7 +15,7 @@ jobs:
       run:
         working-directory: company-platform/backend
     env:
-      DATABASE_URL: sqlite+pysqlite:///:memory:
+      DATABASE_URL: postgresql+psycopg://test:test@localhost:5432/test
       JWT_SECRET_KEY: test-only-secret-key-that-is-long-enough-for-tests
     steps:
       - uses: actions/checkout@v4
